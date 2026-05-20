@@ -1,7 +1,22 @@
+using GymManagmentSystem.DAL.DbContexts;
+using GymManagmentSystem.DAL.Repositories.Classes;
+using GymManagmentSystem.DAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+#region services
+builder.Services.AddDbContext<GymDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+//OLD WAYS
+//builder.Services.AddScoped<IPLanRepository, MockRepository>();
+builder.Services.AddScoped<IPLanRepository, PlanRepository>();
+#endregion
 
 var app = builder.Build();
 
