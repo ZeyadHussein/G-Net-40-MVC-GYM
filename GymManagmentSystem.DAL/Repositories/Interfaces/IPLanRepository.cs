@@ -15,5 +15,7 @@ namespace GymManagmentSystem.DAL.Repositories.Interfaces
         public Task<int> AddAsync(Plan plan);
         public Task<int> UpdateAsync(Plan plan);
         public Task<int> DeleteAsync(Plan plan);
+
+
     }
 }

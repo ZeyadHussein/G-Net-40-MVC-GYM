@@ -1,3 +1,5 @@
+using GymManagmentSystem.BLL.Services.Calassess;
+using GymManagmentSystem.BLL.Services.Interfaces;
 using GymManagmentSystem.DAL.DbContexts;
 using GymManagmentSystem.DAL.Repositories.Classes;
 using GymManagmentSystem.DAL.Repositories.Interfaces;
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<GymDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 //OLD WAYS
 //builder.Services.AddScoped<IPLanRepository, MockRepository>();
 builder.Services.AddScoped<IPLanRepository, PlanRepository>();
