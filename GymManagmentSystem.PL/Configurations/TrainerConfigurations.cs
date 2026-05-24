@@ -6,7 +6,7 @@ namespace GymManagmentSystem.PL.Configurations
 {
     public class TrainerConfigurations:GymUserConfigurations<Trainer>,IEntityTypeConfiguration<Trainer>
     {
-        public void Configure(EntityTypeBuilder<Trainer> builder)
+        public new void Configure(EntityTypeBuilder<Trainer> builder)
         {
             builder.Property(x=>x.CreatedAt)
                 .HasColumnName("HireDate")

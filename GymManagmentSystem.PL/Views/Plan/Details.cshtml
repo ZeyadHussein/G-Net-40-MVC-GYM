@@ -1,69 +1,83 @@
-﻿@model Plan
+﻿@using GymManagmentSystem.BLL.ViewModels.PlanViewModels
+@model PlanDetailsViewModel
+@{
+    ViewData["Title"] = "Details";
+}
 
-<div class="container">
-    <main role="main" class="pb-3">
 
-        <div class="container mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-
-                    <div class="card shadow-lg border-0">
-
-                        <div class="card-header text-white text-center py-5 @(Model.IsActive ? "bg-primary-color" : "bg-secondary")">
-                            <i class="bi bi-star display-4"></i>
-                            <h3 class="mt-2 mb-0">@Model.Name</h3>
-                        </div>
-
-                        <div class="card-body p-4">
-
-                            <div class="text-center mb-4">
-                                <div class="display-4 fw-bold text-primary-color">
-                                    @Model.Price
-                                </div>
-                                <small class="text-muted">EGP</small>
-                            </div>
-
-                            <hr />
-
-                            <p class="mb-2">
-                                <i class="bi bi-calendar-check text-primary-color me-2"></i>
-                                <strong>Duration:</strong> @Model.DurationInDays days
-                            </p>
-
-                            <p class="mb-2">
-                                <i class="bi bi-info-circle text-primary-color me-2"></i>
-                                <strong>Description:</strong>
-                            </p>
-
-                            <p class="text-muted">@Model.Description</p>
-
-                            <p class="mt-3">
-                                <strong>Status:</strong>
-
-                                @if (Model.IsActive)
-                                {
-                                    <span class="badge bg-success">Active</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">Inactive</span>
-                                }
-                            </p>
-
-                            <div class="d-grid mt-4">
-                                <a asp-controller="Plan"
-                                   asp-action="Index"
-                                   class="btn btn-outline-primary">
-                                    Back to Plans
-                                </a>
-                            </div>
-
-                        </div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header @(Model.IsActive ? "bg-primary-color" : "bg-secondary") text-white text-center py-5">
+                    <i class="bi bi-award display-4 mb-3"></i>
+                    <h2 class="mb-0">@Model.PlanName</h2>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4 py-3 bg-light rounded">
+                        <div class="display-3 fw-bold text-primary-color">@Model.Price.ToString("N0")</div>
+                        <small class="text-muted fs-5">EGP</small>
                     </div>
 
+                    <div class="plan-details">
+                        <div class="detail-item mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box me-3">
+                                    <i class="bi bi-calendar-check text-primary-color fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 text-muted">Duration</h6>
+                                    <p class="mb-0 fw-bold">@Model.DurationDays days</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-item mb-4">
+                            <div class="d-flex align-items-start mb-2">
+                                <div class="icon-box me-3">
+                                    <i class="bi bi-file-text text-primary-color fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2 text-muted">Description</h6>
+                                    <p class="mb-0">@Model.Description</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-item mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box me-3">
+                                    <i class="bi @(Model.IsActive ? "bi-check-circle-fill text-success" : "bi-x-circle-fill text-danger") fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 text-muted">Status</h6>
+                                    <p class="mb-0">
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                Inactive
+                                            </span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <div class="d-flex justify-content-between gap-2">
+                        <a asp-action="Index" class="btn btn-outline flex-fill">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-
-    </main>
+    </div>
 </div>
