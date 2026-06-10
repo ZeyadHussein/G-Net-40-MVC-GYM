@@ -1,0 +1,42 @@
+﻿using GymManagmentSystem.DAL.Models.Enums;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GymManagmentSystem.BLL.ViewModels.TrainerViewModels
+{
+    public class CreateTrainerViewModel
+    {
+        [Required]
+        [MaxLength(50)]
+        public string Name { get; set; } = null!;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+
+        [Required]
+        public string Phone { get; set; } = null!;
+
+        [Required]
+        public DateOnly DateOfBirth { get; set; }
+
+        [Required]
+        public Gender Gender { get; set; }
+
+        [Required]
+        public int BuildingNumber { get; set; }
+
+        [Required]
+        public string Street { get; set; } = null!;
+
+        [Required]
+        public string City { get; set; } = null!;
+
+        [Required]
+        public Specialites Specialties { get; set; }
+    }
+}
