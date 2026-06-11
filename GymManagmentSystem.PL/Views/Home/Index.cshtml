@@ -1,4 +1,5 @@
-﻿<div class="container">
+﻿@model GymManagmentSystem.PL.ViewModels.HomeDashboardViewModel
+<div class="container">
     <main role="main" class="pb-3">
         <div class="row">
             <div class="col-md-6 col-lg-7 col-12">
@@ -23,39 +24,56 @@
                         <div class="row g-0">
                             <div class="col-4">
                                 <div class="stat">
-                                    <span class="fw-bolder fs-5 d-block mb-1">100</span>
+                                    <span class="fw-bolder fs-5 d-block mb-1">
+                                        @Model.Analytics.TotalMembers
+                                    </span>
                                     <h3 class="fs-5 fw-normal">Total Members</h3>
                                 </div>
                             </div>
+
                             <div class="col-4">
                                 <div class="stat">
-                                    <span class="fw-bolder fs-5 d-block mb-1">85</span>
+                                    <span class="fw-bolder fs-5 d-block mb-1">
+                                        @Model.Analytics.ActiveMembers
+                                    </span>
                                     <h3 class="fs-5 fw-normal">Active Members</h3>
                                 </div>
                             </div>
+
                             <div class="col-4">
                                 <div class="stat">
-                                    <span class="fw-bolder fs-5 d-block mb-1">20</span>
+                                    <span class="fw-bolder fs-5 d-block mb-1">
+                                        @Model.Analytics.TotalTrainers
+                                    </span>
                                     <h3 class="fs-5 fw-normal">Trainers</h3>
                                 </div>
                             </div>
                         </div>
+
                         <div class="row g-0">
                             <div class="col-4">
                                 <div class="stat">
-                                    <span class="fw-bolder fs-5 d-block mb-1">3</span>
+                                    <span class="fw-bolder fs-5 d-block mb-1">
+                                        @Model.Analytics.UpcomingSessions
+                                    </span>
                                     <h3 class="fs-5 fw-normal">Upcoming Sessions</h3>
                                 </div>
                             </div>
+
                             <div class="col-4">
                                 <div class="stat">
-                                    <span class="fw-bolder fs-5 d-block mb-1">5</span>
+                                    <span class="fw-bolder fs-5 d-block mb-1">
+                                        @Model.Analytics.OngoingSessions
+                                    </span>
                                     <h3 class="fs-5 fw-normal">Ongoing Sessions</h3>
                                 </div>
                             </div>
+
                             <div class="col-4">
                                 <div class="stat">
-                                    <span class="fw-bolder fs-5 d-block mb-1">20</span>
+                                    <span class="fw-bolder fs-5 d-block mb-1">
+                                        @Model.Analytics.CompletedSessions
+                                    </span>
                                     <h3 class="fs-5 fw-normal">Completed Sessions</h3>
                                 </div>
                             </div>
@@ -63,13 +81,17 @@
                     </div>
 
                     <div class="buttons my-4">
-                        <button class="get-started bg-primary-color text-white btn rounded-5 fw-medium px-3 py-2 me-5 border-2 border-primary-color">
-                            Get Started
-                        </button>
+                        <a asp-controller="Sessions"
+                           asp-action="Create"
+                           class="get-started bg-primary-color text-white btn rounded-5 fw-medium px-3 py-2 me-5 border-2 border-primary-color">
+                            Create Session
+                        </a>
 
-                        <button class="explore-more border-primary-color btn rounded-5 fw-medium px-3 py-2 border-2 text-primary-color fw-medium">
-                            Explore More
-                        </button>
+                        <a asp-controller="Sessions"
+                           asp-action="Index"
+                           class="explore-more border-primary-color btn rounded-5 fw-medium px-3 py-2 border-2 text-primary-color fw-medium">
+                            Manage Sessions
+                        </a>
                     </div>
                 </div>
             </div>
@@ -206,44 +228,51 @@
                     </div>
 
                     <div class="row row-cols-md-3 row-cols-12 gy-4 gx-2 gx-md-4">
-                        <div>
-                            <div class="card">
-                                <img src="./images/workout 1.jpg" class="card-img-top" alt="..." />
 
-                                <footer class="card-footer bg-white">
-                                    <h5 class="card-title text-black-alternative text-uppercase fw-bolder">
-                                        group workout
-                                    </h5>
-                                    <a href="#" class="">Explore</a>
-                                </footer>
+                        @if (Model.LatestSessions != null && Model.LatestSessions.Any())
+                        {
+                            foreach (var item in Model.LatestSessions)
+                            {
+                                <div>
+                                    <div class="card">
+                                        <img src="./images/workout 1.jpg"
+                                             class="card-img-top"
+                                             alt="@item.CategoryName" />
+
+                                        <footer class="card-footer bg-white">
+                                            <h5 class="card-title text-black-alternative text-uppercase fw-bolder">
+                                                @item.CategoryName
+                                            </h5>
+
+                                            <p class="mb-2">
+                                                @item.TimeRangeDisplay
+                                            </p>
+
+                                            <span class="badge bg-info mb-2">
+                                                @item.Status
+                                            </span>
+
+                                            <br />
+
+                                            <a asp-controller="Sessions"
+                                               asp-action="Details"
+                                               asp-route-id="@item.Id">
+                                                Explore
+                                            </a>
+                                        </footer>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    No sessions available.
+                                </div>
                             </div>
-                        </div>
+                        }
 
-                        <div>
-                            <div class="card">
-                                <img src="./images/workout 2.jpg" class="card-img-top" alt="..." />
-
-                                <footer class="card-footer bg-white">
-                                    <h5 class="card-title text-black-alternative text-uppercase fw-bolder">
-                                        group workout
-                                    </h5>
-                                    <a href="#" class="">Explore</a>
-                                </footer>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="card">
-                                <img src="./images/workout 3.jpg" class="card-img-top" alt="..." />
-
-                                <footer class="card-footer bg-white">
-                                    <h5 class="card-title text-black-alternative text-uppercase fw-bolder">
-                                        group workout
-                                    </h5>
-                                    <a href="#" class="">Explore</a>
-                                </footer>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="indicators">

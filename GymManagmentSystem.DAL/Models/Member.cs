@@ -15,6 +15,6 @@ namespace GymManagmentSystem.DAL.Models
         public ICollection<Booking> MemberSessions { get; set; }=null!;
 
         public ICollection<Membership> MemberPlans { get; set; }=null!;
-        
+        public bool IsActive { get; set; }
     }
 }

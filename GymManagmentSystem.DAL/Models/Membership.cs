@@ -18,8 +18,8 @@ namespace GymManagmentSystem.DAL.Models
         [NotMapped]
         public string Status=> EndDate>DateTime.UtcNow? "Active" : "Expired";
 
-        [NotMapped]
-        public bool IsActive => EndDate > DateTime.UtcNow;
+        
+       
     }
 
 }
