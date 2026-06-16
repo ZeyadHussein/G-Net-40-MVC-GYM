@@ -1,3 +1,4 @@
+using GymManagmentSystem.BLL;
 using GymManagmentSystem.BLL.Services.Calassess;
 using GymManagmentSystem.BLL.Services.Interfaces;
 using GymManagmentSystem.DAL.DbContexts;
@@ -20,6 +21,11 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 //OLD WAYS
 //builder.Services.AddScoped<IPLanRepository, MockRepository>();
 builder.Services.AddScoped<IPLanRepository, PlanRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+builder.Services.AddAutoMapper(M => M.AddProfile(new MappingProfiles() ));
+builder.Services.AddScoped<ISessionService, SessionService>();
+
 #endregion
 
 var app = builder.Build();
