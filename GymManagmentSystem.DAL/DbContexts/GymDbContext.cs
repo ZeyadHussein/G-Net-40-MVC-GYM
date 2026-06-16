@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GymManagmentSystem.DAL.DbContexts
+namespace GymManagmentSystem.DAL.dbcontext
 {
     public class GymDbContext:DbContext
     {

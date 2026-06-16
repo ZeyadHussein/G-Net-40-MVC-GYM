@@ -1,9 +1,10 @@
 using GymManagmentSystem.BLL;
 using GymManagmentSystem.BLL.Services.Calassess;
 using GymManagmentSystem.BLL.Services.Interfaces;
-using GymManagmentSystem.DAL.DbContexts;
+using GymManagmentSystem.DAL.dbcontext;
 using GymManagmentSystem.DAL.Repositories.Classes;
 using GymManagmentSystem.DAL.Repositories.Interfaces;
+using GymManagmentSystem.PL;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,7 @@ builder.Services.AddScoped<ISessionService, SessionService>();
 #endregion
 
 var app = builder.Build();
+await app.MigrateAndSeedDatabaseAsync();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
