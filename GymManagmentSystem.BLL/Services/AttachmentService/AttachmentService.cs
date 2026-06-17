@@ -23,36 +23,57 @@ namespace GymManagmentSystem.BLL.Services.AttachmentService
         }
 
         // Public implementation used internally
-        public async Task<string?> UploadAsync(Stream fileStream, string fileName, string folderName, CancellationToken ct = default)
+        public async Task<string?> UploadAsync(
+    Stream fileStream,
+    string fileName,
+    string folderName,
+    CancellationToken ct = default)
         {
-            if (fileStream is null || !fileStream.CanRead || fileStream.Length == 0)
+            if (fileStream == null)
+                return null;
+
+            if (fileStream.Length == 0)
                 return null;
 
             if (fileStream.Length > _maxFileSize)
                 return null;
 
-            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            var extension =
+                Path.GetExtension(fileName)
+                    .ToLowerInvariant();
 
             if (!_allowedExtensions.Contains(extension))
                 return null;
 
-            var uploadsFolder = Path.Combine(_env.WebRootPath ?? string.Empty, folderName);
-            Directory.CreateDirectory(uploadsFolder);
+            var uploadsFolder =
+                Path.Combine(
+                    _env.WebRootPath,
+                    folderName);
 
-            var storedFileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsFolder, storedFileName);
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(
+                    uploadsFolder);
+            }
 
-            try
-            {
-                await using var fs = new FileStream(filePath, FileMode.Create);
-                await fileStream.CopyToAsync(fs, ct);
-                return storedFileName;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Upload failed");
-                return null;
-            }
+            var newName =
+                $"{Guid.NewGuid()}{extension}";
+
+            var filePath =
+                Path.Combine(
+                    uploadsFolder,
+                    newName);
+
+            await using var fs =
+                new FileStream(
+                    filePath,
+                    FileMode.Create);
+
+            await fileStream.CopyToAsync(
+                fs,
+                ct);
+
+            return newName;
         }
 
         // Public delete

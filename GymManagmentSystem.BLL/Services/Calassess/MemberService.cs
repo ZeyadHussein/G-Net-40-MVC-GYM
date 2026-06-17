@@ -37,50 +37,93 @@ namespace GymManagmentSystem.BLL.Services.Calassess
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<bool> CreateMemberAsync(CreateMemberViewModel model, CancellationToken ct = default)
+        public async Task<bool> CreateMemberAsync(
+           CreateMemberViewModel model,
+           CancellationToken ct = default)
         {
-            var emailExist = await _memberRepository.AnyAsync(x => x.Email == model.Email, ct);
-            var phoneExist = await _memberRepository.AnyAsync(x => x.Phone == model.Phone, ct);
-
-            if (emailExist || phoneExist)
-                return false;
-
-            var photoName = await _attachmentService.UploadAsync(
-                model.Photo.OpenReadStream(),
-                model.Photo.FileName,
-                "images", // ✅ FIXED folder
-                ct);
-
-            if (string.IsNullOrEmpty(photoName))
-                return false;
-
-            var member = new Member
+            try
             {
-                Name = model.Name,
-                Email = model.Email,
-                Phone = model.Phone,
-                Photo = photoName,
-                DateOfBirth = model.DateOfBirth,
-                Gender = model.Gender,
-                Address = new Address
+                var emailExist =
+                    await _memberRepository.AnyAsync(
+                        x => x.Email == model.Email,
+                        ct);
+
+                if (emailExist)
+                    return false;
+
+                var phoneExist =
+                    await _memberRepository.AnyAsync(
+                        x => x.Phone == model.Phone,
+                        ct);
+
+                if (phoneExist)
+                    return false;
+
+                if (model.Photo == null)
+                    return false;
+
+                var photoName =
+                    await _attachmentService.UploadAsync(
+                        model.Photo.OpenReadStream(),
+                        model.Photo.FileName,
+                        "images",
+                        ct);
+
+                if (string.IsNullOrEmpty(photoName))
+                    return false;
+
+                var member = new Member
                 {
-                    BuildingNumber = model.BuildingNumber,
-                    City = model.City,
-                    Street = model.Street
-                },
-                HealthRecord = new HealthRecord
-                {
-                    BloodType = model.HealthRecordViewModel.BloodType,
-                    Height = model.HealthRecordViewModel.Height,
-                    Weight = model.HealthRecordViewModel.Weight
-                }
-            };
+                    Name = model.Name,
 
-            await _memberRepository.AddAsync(member);
+                    Email = model.Email,
 
-            var result = await _unitOfWork.SaveChangesAsync(ct);
+                    Phone = model.Phone,
 
-            return result > 0;
+                    DateOfBirth = model.DateOfBirth,
+
+                    Gender = model.Gender,
+
+                    Photo = photoName,
+
+                    IsActive = true,
+
+                    Address = new Address
+                    {
+                        BuildingNumber = model.BuildingNumber,
+
+                        City = model.City,
+
+                        Street = model.Street
+                    },
+
+                    HealthRecord = new HealthRecord
+                    {
+                        Height =
+                            model.HealthRecordViewModel.Height,
+
+                        Weight =
+                            model.HealthRecordViewModel.Weight,
+
+                        BloodType =
+                            model.HealthRecordViewModel.BloodType,
+
+                        Note =
+                            model.HealthRecordViewModel.Note
+                    }
+                };
+
+                await _memberRepository.AddAsync(member);
+
+                var result =
+                    await _unitOfWork.SaveChangesAsync(ct);
+
+                return result > 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<IEnumerable<MemberViewModel>> GetALLMembersAsync(CancellationToken ct = default)
@@ -196,9 +239,7 @@ namespace GymManagmentSystem.BLL.Services.Calassess
             {
                 if (!string.IsNullOrEmpty(member.Photo))
                 {
-                    _attachmentService.Delete(
-                        member.Photo,
-                        "MembersPicturies");
+                    _attachmentService.Delete( member.Photo, "images");
                 }
 
                 return true;
