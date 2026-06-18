@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GymManagmentSystem.DAL.Models;
 using GymManagmentSystem.BLL.ViewModels.AcountViewodel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GymManagmentSystem.PL.Controllers
 {
@@ -59,6 +60,20 @@ namespace GymManagmentSystem.PL.Controllers
             }
             return View(model);
         }
+        #endregion
+        #region SignOut
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction(nameof(Login));
+
+        }
+        #endregion
+        #region AccessDenied
+        public IActionResult AccessDenied()=> View();
+
         #endregion
     }
 }
