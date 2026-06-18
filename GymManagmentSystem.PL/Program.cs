@@ -3,9 +3,11 @@ using GymManagmentSystem.BLL.Services.AttachmentService;
 using GymManagmentSystem.BLL.Services.Calassess;
 using GymManagmentSystem.BLL.Services.Interfaces;
 using GymManagmentSystem.DAL.dbcontext;
+using GymManagmentSystem.DAL.Models;
 using GymManagmentSystem.DAL.Repositories.Classes;
 using GymManagmentSystem.DAL.Repositories.Interfaces;
 using GymManagmentSystem.PL;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +22,23 @@ builder.Services.AddDbContext<GymDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+
+    options.Lockout.MaxFailedAccessAttempts = 5;
+
+    options.Lockout.DefaultLockoutTimeSpan =
+        TimeSpan.FromMinutes(2);
+})
+.AddEntityFrameworkStores<GymDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+});
+
 builder.Services.AddAutoMapper(m =>
 {
     m.AddProfile(new MappingProfiles());
@@ -28,11 +47,14 @@ builder.Services.AddAutoMapper(m =>
 builder.Services.AddScoped(typeof(IGenericRepository<>),
                            typeof(GenericRepository<>));
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUnitOfWork,
+                           UnitOfWork>();
 
-builder.Services.AddScoped<IPLanRepository, PlanRepository>();
+builder.Services.AddScoped<IPLanRepository,
+                           PlanRepository>();
 
-builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+builder.Services.AddScoped<ISessionRepository,
+                           SessionRepository>();
 
 builder.Services.AddScoped<IAttachmentService,
                            AttachmentService>();
@@ -62,11 +84,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern:
-    "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

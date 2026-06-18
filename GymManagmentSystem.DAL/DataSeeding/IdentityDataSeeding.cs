@@ -52,8 +52,21 @@ namespace GymManagmentSystem.DAL.DataSeeding
 
 
                     };
-                    await userManager.CreateAsync(MainAdminUser, "P@ssw0rd");
-                    await userManager.AddToRoleAsync(MainAdminUser, "SuperAdmin");
+                    var result = await userManager.CreateAsync( MainAdminUser, "P@ssw0rd");
+
+                    if (!result.Succeeded)
+                    {
+                        logger.LogError(
+                            "Failed to create SuperAdmin: {Errors}",
+                            string.Join(", ",
+                            result.Errors.Select(e => e.Description)));
+
+                        return;
+                    }
+
+                    await userManager.AddToRoleAsync(
+                        MainAdminUser,
+                        "SuperAdmin");
 
                     var Admin01 = new ApplicationUser()
                     {
@@ -68,7 +81,7 @@ namespace GymManagmentSystem.DAL.DataSeeding
                     var CreateResult = await userManager.CreateAsync(Admin01, "P@ssw0rd");
                     if (!CreateResult.Succeeded)
                     {
-                        logger.LogError("Failed to create seed SuperAdmin:[Errors]",string.Join(", ", CreateResult.Errors.Select(e => e.Description)));
+                        logger.LogError("Failed to create seed SuperAdmin:[Errors]", string.Join(", ", CreateResult.Errors.Select(e => e.Description)));
                         return;
                     }
                     logger.LogInformation($"Seeded SuperAdmin user {Admin01.Email}.");
