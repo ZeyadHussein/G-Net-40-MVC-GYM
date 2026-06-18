@@ -1,5 +1,5 @@
 ﻿using GymManagmentSystem.BLL.ViewModels.TrainerViewModels;
-using GymManagmentSystem.DAL.DbContexts;
+using GymManagmentSystem.DAL.dbcontext;
 using GymManagmentSystem.DAL.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

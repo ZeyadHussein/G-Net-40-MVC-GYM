@@ -1,52 +1,96 @@
 using GymManagmentSystem.BLL;
+using GymManagmentSystem.BLL.Services.AttachmentService;
 using GymManagmentSystem.BLL.Services.Calassess;
 using GymManagmentSystem.BLL.Services.Interfaces;
-using GymManagmentSystem.DAL.DbContexts;
+using GymManagmentSystem.DAL.dbcontext;
+using GymManagmentSystem.DAL.Models;
 using GymManagmentSystem.DAL.Repositories.Classes;
 using GymManagmentSystem.DAL.Repositories.Interfaces;
+using GymManagmentSystem.PL;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-#region services
+#region Services
+
 builder.Services.AddDbContext<GymDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddScoped<IMemberService, MemberService>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-//OLD WAYS
-//builder.Services.AddScoped<IPLanRepository, MockRepository>();
-builder.Services.AddScoped<IPLanRepository, PlanRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<ISessionRepository, SessionRepository>();
-builder.Services.AddAutoMapper(M => M.AddProfile(new MappingProfiles() ));
-builder.Services.AddScoped<ISessionService, SessionService>();
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+
+    options.Lockout.MaxFailedAccessAttempts = 5;
+
+    options.Lockout.DefaultLockoutTimeSpan =
+        TimeSpan.FromMinutes(2);
+})
+.AddEntityFrameworkStores<GymDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
+builder.Services.AddAutoMapper(m =>
+{
+    m.AddProfile(new MappingProfiles());
+});
+
+builder.Services.AddScoped(typeof(IGenericRepository<>),
+                           typeof(GenericRepository<>));
+
+builder.Services.AddScoped<IUnitOfWork,
+                           UnitOfWork>();
+
+builder.Services.AddScoped<IPLanRepository,
+                           PlanRepository>();
+
+builder.Services.AddScoped<ISessionRepository,
+                           SessionRepository>();
+
+builder.Services.AddScoped<IAttachmentService,
+                           AttachmentService>();
+
+builder.Services.AddScoped<IMemberService,
+                           MemberService>();
+
+builder.Services.AddScoped<ISessionService,
+                           SessionService>();
 
 #endregion
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+await app.MigrateAndSeedDatabaseAsync();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

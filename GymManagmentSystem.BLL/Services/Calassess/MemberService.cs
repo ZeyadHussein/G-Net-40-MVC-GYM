@@ -1,11 +1,14 @@
-﻿using GymManagmentSystem.BLL.Services.Interfaces;
+﻿using GymManagmentSystem.BLL.Services.AttachmentService;
+using GymManagmentSystem.BLL.Services.Interfaces;
 using GymManagmentSystem.BLL.ViewModels.MemberViewModels;
 using GymManagmentSystem.DAL.Models;
 using GymManagmentSystem.DAL.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GymManagmentSystem.BLL.Services.Calassess
@@ -18,65 +21,117 @@ namespace GymManagmentSystem.BLL.Services.Calassess
         private readonly IGenericRepository<Plan> _planRepository;
         private readonly IGenericRepository<HealthRecord> _healthRecordRepository;
         private readonly IGenericRepository<Booking> _bookingRepository;
+        private readonly IAttachmentService _attachmentService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MemberService(IGenericRepository<Member> MemberRepository,IGenericRepository<Membership> membershipRepository,
-            IGenericRepository<Plan> planRepository, IGenericRepository<HealthRecord> HealthRecordRepository,
-            IGenericRepository<Booking> bookingRepository)
+        public MemberService(IGenericRepository<Member> memberRepository, IGenericRepository<Membership> membershipRepository,IGenericRepository<Plan> planRepository,
+            IGenericRepository<HealthRecord> healthRecordRepository,IGenericRepository<Booking> bookingRepository, IAttachmentService attachmentService,  IUnitOfWork unitOfWork)
         {
-            _memberRepository = MemberRepository;
+            _memberRepository = memberRepository;
             _membershipRepository = membershipRepository;
             _planRepository = planRepository;
-            _healthRecordRepository = HealthRecordRepository;
+            _healthRecordRepository = healthRecordRepository;
             _bookingRepository = bookingRepository;
+
+            _attachmentService = attachmentService;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<bool> CreateMemberAsync(CreateMemberViewModel model, CancellationToken ct = default)
+        public async Task<bool> CreateMemberAsync(
+           CreateMemberViewModel model,
+           CancellationToken ct = default)
         {
-            //check if email exist
-            var emailExist = await _memberRepository.AnyAsync(x => x.Email == model.Email, ct);
-            //check if phone exist
-            var phoneExist = await _memberRepository.AnyAsync(x => x.Phone == model.Phone, ct);
-            if (emailExist || phoneExist)
+            try
+            {
+                var emailExist =
+                    await _memberRepository.AnyAsync(
+                        x => x.Email == model.Email,
+                        ct);
+
+                if (emailExist)
+                    return false;
+
+                var phoneExist =
+                    await _memberRepository.AnyAsync(
+                        x => x.Phone == model.Phone,
+                        ct);
+
+                if (phoneExist)
+                    return false;
+
+                if (model.Photo == null)
+                    return false;
+
+                var photoName =
+                    await _attachmentService.UploadAsync(
+                        model.Photo.OpenReadStream(),
+                        model.Photo.FileName,
+                        "images",
+                        ct);
+
+                if (string.IsNullOrEmpty(photoName))
+                    return false;
+
+                var member = new Member
+                {
+                    Name = model.Name,
+
+                    Email = model.Email,
+
+                    Phone = model.Phone,
+
+                    DateOfBirth = model.DateOfBirth,
+
+                    Gender = model.Gender,
+
+                    Photo = photoName,
+
+                    IsActive = true,
+
+                    Address = new Address
+                    {
+                        BuildingNumber = model.BuildingNumber,
+
+                        City = model.City,
+
+                        Street = model.Street
+                    },
+
+                    HealthRecord = new HealthRecord
+                    {
+                        Height =
+                            model.HealthRecordViewModel.Height,
+
+                        Weight =
+                            model.HealthRecordViewModel.Weight,
+
+                        BloodType =
+                            model.HealthRecordViewModel.BloodType,
+
+                        Note =
+                            model.HealthRecordViewModel.Note
+                    }
+                };
+
+                await _memberRepository.AddAsync(member);
+
+                var result =
+                    await _unitOfWork.SaveChangesAsync(ct);
+
+                return result > 0;
+            }
+            catch
             {
                 return false;
             }
-            //manual mapping
-            var member = new Member()
-            {
-                Name = model.Name,
-                Email = model.Email,
-                Phone = model.Phone,
-                DateOfBirth = model.DateOfBirth,
-                Gender = model.Gender,
-                Address = new Address
-                {
-                    BuildingNumber = model.BuildingNumber,
-                    City = model.City,
-                    Street = model.Street
-                },
-                HealthRecord = new HealthRecord()
-                {
-                    BloodType = model.HealthRecordViewModel.BloodType,
-                    Height = model.HealthRecordViewModel.Height,
-                    Weight = model.HealthRecordViewModel.Weight,
-
-
-                }
-
-            };
-            var result = await _memberRepository.AddAsync(member);
-            return result > 0;
         }
-
-
-
 
         public async Task<IEnumerable<MemberViewModel>> GetALLMembersAsync(CancellationToken ct = default)
         {
-            var members =await _memberRepository.GetAllAsync(ct:ct);
-            if(!members.Any())
+            var members = await _memberRepository.GetAllAsync(ct: ct);
+            if (!members.Any())
             {
-                return [];
+                return Enumerable.Empty<MemberViewModel>();
             }
             var MemberViewModels = members.Select(m => new MemberViewModel
             {
@@ -84,12 +139,10 @@ namespace GymManagmentSystem.BLL.Services.Calassess
                 Name = m.Name,
                 Email = m.Email,
                 Phone = m.Phone,
-                Photo= m.Photo,
-                Gender=m.Gender.ToString(),
-
+                Photo = m.Photo,
+                Gender = m.Gender.ToString(),
             });
             return MemberViewModels;
-
         }
 
         public async Task<MemberViewModel?> GetMemberDetailsAsync(int memberId, CancellationToken ct = default)
@@ -167,12 +220,32 @@ namespace GymManagmentSystem.BLL.Services.Calassess
 
         public async Task<bool> RemoveMemberAsync(int id, CancellationToken ct = default)
         {
-            var Member = await _memberRepository.GetByIdAsync(id, ct);
-            if (Member is null) return false;
-            var HasFutureSessions = await _bookingRepository.AnyAsync(b => b.MemberId == id && b.Session.StartDate > DateTime.Now);
-            if (HasFutureSessions) return false;
-            var result = await _memberRepository.DeleteAsync(Member);
-            return result > 0;
+            var member = await _memberRepository.GetByIdAsync(id, ct);
+
+            if (member is null)
+                return false;
+
+            var hasFutureSessions =
+                await _bookingRepository.AnyAsync(
+                    b => b.MemberId == id &&
+                         b.Session.StartDate > DateTime.Now);
+
+            if (hasFutureSessions)
+                return false;
+
+            var result = await _memberRepository.DeleteAsync(member);
+
+            if (result > 0)
+            {
+                if (!string.IsNullOrEmpty(member.Photo))
+                {
+                    _attachmentService.Delete( member.Photo, "images");
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<bool> UpdateMemberDetailsAsync(int id, MemberToUpdateViewModel model, CancellationToken ct = default)

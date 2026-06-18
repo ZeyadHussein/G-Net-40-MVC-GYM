@@ -1,4 +1,4 @@
-﻿using GymManagmentSystem.DAL.DbContexts;
+﻿using GymManagmentSystem.DAL.dbcontext;
 using GymManagmentSystem.DAL.Models;
 using GymManagmentSystem.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
